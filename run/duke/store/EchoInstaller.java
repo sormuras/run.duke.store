@@ -36,7 +36,7 @@ public record EchoInstaller(String name) implements ToolInstaller {
       runner.run(compile);
       runner.run(archive);
     }
-    var namespace = getClass().getModule().getName();
+    var namespace = namespace();
     var echoTool = new EchoTool();
     var echoSource = Program.findJavaDevelopmentKitTool("java", echoJava).orElseThrow();
     var echoBinary = Program.findJavaDevelopmentKitTool("java", "-jar", echoJar).orElseThrow();

@@ -14,31 +14,32 @@ public record GoogleJavaFormatInstaller(String name) implements ToolInstaller {
   }
 
   private Map<String, String> assets(String version) {
+    var name = "google-java-format";
+    var from = "https://github.com/google/" + name;
     if (version.equals("1.15.0")) {
       return Map.of(
-          "google-java-format-1.15.0-all-deps.jar",
-          "https://github.com/google/google-java-format/releases/download/v1.15.0/google-java-format-1.15.0-all-deps.jar#SIZE=3519780&SHA-256=a356bb0236b29c57a3ab678f17a7b027aad603b0960c183a18f1fe322e4f38ea",
+          name + "-1.15.0-all-deps.jar",
+          from + "/releases/download/v1.15.0/" + name + "-1.15.0-all-deps.jar#SIZE=3519780",
           "README.md",
-          "https://github.com/google/google-java-format/raw/v1.15.0/README.md#SIZE=6270");
+          from + "/raw/v1.15.0/README.md#SIZE=6270");
     }
     if (version.equals("1.16.0")) {
       return Map.of(
-          "google-java-format-1.16.0-all-deps.jar",
-          "https://github.com/google/google-java-format/releases/download/v1.16.0/google-java-format-1.16.0-all-deps.jar#SIZE=3511159",
+          name + "-1.16.0-all-deps.jar",
+          from + "/releases/download/v1.16.0/" + name + "-1.16.0-all-deps.jar#SIZE=3511159",
           "README.md",
-          "https://github.com/google/google-java-format/raw/v1.16.0/README.md#SIZE=6023");
+          from + "/raw/v1.16.0/README.md#SIZE=6023");
     }
     return Map.of(
-        "google-java-format-%s-all-deps.jar".formatted(version),
-        "https://github.com/google/google-java-format/releases/download/v%1$s/google-java-format-%1$s-all-deps.jar"
-            .formatted(version),
+        (name + "-%s-all-deps.jar").formatted(version),
+        (from + "/releases/download/v%1$s/" + name + "-%1$s-all-deps.jar").formatted(version),
         "README.md",
-        "https://github.com/google/google-java-format/raw/v%s/README.md".formatted(version));
+        (from + "/raw/v%s/README.md").formatted(version));
   }
 
   @Override
   public Tool install(Path folder, String version) throws Exception {
-    var namespace = getClass().getModule().getName();
+    var namespace = namespace();
     var name = name() + '@' + version;
     Path jar = null;
     for (var asset : assets(version).entrySet()) {
@@ -54,6 +55,8 @@ public record GoogleJavaFormatInstaller(String name) implements ToolInstaller {
   }
 
   static void download(URI uri, Path file) throws Exception {
+    var parent = file.getParent();
+    if (parent != null) Files.createDirectories(parent);
     System.out.printf("<< %s%n", uri);
     try (var stream = uri.toURL().openStream()) {
       var size = Files.copy(stream, file);
