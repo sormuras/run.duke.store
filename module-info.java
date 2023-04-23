@@ -7,5 +7,6 @@ module run.duke.store {
 
   provides jdk.tools.ToolInstaller with
       run.duke.store.EchoInstaller,
+      run.duke.store.MavenInstaller,
       run.duke.store.GoogleJavaFormatInstaller;
 }
