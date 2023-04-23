@@ -7,6 +7,7 @@ import jdk.tools.Program;
 import jdk.tools.Tool;
 import jdk.tools.ToolFinder;
 import jdk.tools.ToolInstaller;
+import run.duke.DukeBrowser;
 
 public record MavenInstaller(String name) implements ToolInstaller {
   public MavenInstaller() {
@@ -26,9 +27,9 @@ public record MavenInstaller(String name) implements ToolInstaller {
           """
               .formatted(base, version, version));
     }
+    var browser = DukeBrowser.ofSystem();
     var uri = URI.create(base + "/wrapper/maven-wrapper/3.2.0/maven-wrapper-3.2.0.jar#SIZE=62547");
-    var mavenWrapperJar = folder.resolve("maven-wrapper.jar");
-    if (Files.notExists(mavenWrapperJar)) download(uri, mavenWrapperJar);
+    var mavenWrapperJar = browser.download(uri, folder.resolve("maven-wrapper.jar"));
     var provider =
         Program.findJavaDevelopmentKitTool(
                 "java",
@@ -37,15 +38,5 @@ public record MavenInstaller(String name) implements ToolInstaller {
                 "org.apache.maven.wrapper.MavenWrapperMain")
             .orElseThrow();
     return ToolFinder.of(Tool.of(namespace(), name() + '@' + version, provider));
-  }
-
-  static void download(URI uri, Path file) throws Exception {
-    var parent = file.getParent();
-    if (parent != null) Files.createDirectories(parent);
-    System.out.printf("<< %s%n", uri);
-    try (var stream = uri.toURL().openStream()) {
-      var size = Files.copy(stream, file);
-      System.out.printf(">> %11d %s%n", size, file.getFileName());
-    }
   }
 }

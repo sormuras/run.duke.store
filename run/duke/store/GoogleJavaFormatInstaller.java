@@ -1,12 +1,12 @@
 package run.duke.store;
 
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import jdk.tools.Program;
 import jdk.tools.Tool;
 import jdk.tools.ToolInstaller;
+import run.duke.DukeBrowser;
 
 public record GoogleJavaFormatInstaller(String name) implements ToolInstaller {
   public GoogleJavaFormatInstaller() {
@@ -38,29 +38,18 @@ public record GoogleJavaFormatInstaller(String name) implements ToolInstaller {
   }
 
   @Override
-  public Tool install(Path folder, String version) throws Exception {
+  public Tool install(Path folder, String version) {
     var namespace = namespace();
     var name = name() + '@' + version;
+    var browser = DukeBrowser.ofSystem();
     Path jar = null;
     for (var asset : assets(version).entrySet()) {
+      var source = URI.create(asset.getValue());
       var target = folder.resolve(asset.getKey());
-      if (Files.notExists(target)) {
-        var source = URI.create(asset.getValue());
-        download(source, target);
-      }
+      browser.download(source, target);
       if (jar == null && target.toString().endsWith(".jar")) jar = target;
     }
     var program = Program.findJavaDevelopmentKitTool("java", "-jar", jar).orElseThrow();
     return Tool.of(namespace, name, program);
-  }
-
-  static void download(URI uri, Path file) throws Exception {
-    var parent = file.getParent();
-    if (parent != null) Files.createDirectories(parent);
-    System.out.printf("<< %s%n", uri);
-    try (var stream = uri.toURL().openStream()) {
-      var size = Files.copy(stream, file);
-      System.out.printf(">> %11d %s%n", size, file.getFileName());
-    }
   }
 }
